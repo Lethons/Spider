@@ -44,7 +44,7 @@ def parse_article_html(article_html):
         'article': article.text(),
         'author': author.text(),
         'stats': stats.text(),
-        }
+    }
 
 
 def save_data(data):
