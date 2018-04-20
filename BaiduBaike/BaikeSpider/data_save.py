@@ -4,7 +4,7 @@ import json
 
 class SaveData():
     def __init__(self):
-        self.path = os.getcwd()
+        self.path = os.getcwd()[:-12]
 
     def save_as_json(self, data):
         filename = str(data['title']) + '.json'
