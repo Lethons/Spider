@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from lxml import etree
 
 
 class ParseHtml():
@@ -21,7 +22,7 @@ class ParseHtml():
     def get_page_para(self, html):
         soup = BeautifulSoup(html, 'html.parser')
         para = soup.find('div', class_='para')
-        return para.get_text()
+        return para.get_text().strip()
 
     def get_page_index(self, html):
         index_list = []
@@ -30,14 +31,6 @@ class ParseHtml():
         for index in indexs:
             index_list.append(index.get_text())
         return index_list
-
-    def get_page_menu(self, html):
-        menu_list = []
-        soup = BeautifulSoup(html, 'html.parser')
-        menus = soup.find_all('dl')
-        for menu in menus:
-            menu_list.append(menu.get_text())
-        return menu_list
 
     def get_page_info(self, html):
         key_list = []
@@ -56,8 +49,32 @@ class ParseHtml():
             return None
         return info
 
-    def getPageText(self, html):
+    def get_page_text(self, html):
+        text_list = []
+        page = etree.HTML(html)
+        page_data = page.xpath('//div[@class="main-content"]/div[starts-with(@class,"para")]/text()')
+        for text in page_data:
+            if '\n' in text and text not in text_list:
+                text_list.append(text)
+            else:
+                text_list[-1] = text_list[-1] + '\n' + text
+        for text in text_list:
+            if text.strip() == '':
+                text_list.remove(text)
+        return text_list
+
+    def get_page_all(self,html):
+        text_dict = {}
         title = self.get_page_title(html)
         para = self.get_page_para(html)
-        info = self.get_page_info(html)
-        menu = self.get_page_menu(html)
+        info_dict = self.get_page_info(html)
+        index_list = self.get_page_index(html)
+        text_list = self.get_page_text(html)
+        for i in range(len(index_list)):
+            text_dict[index_list[i]] = text_list[i].strip('\n')
+        return {
+            'title': title,
+            'para': para,
+            'info': info_dict,
+            'text': text_dict,
+        }
